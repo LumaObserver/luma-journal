@@ -89,7 +89,7 @@ def parse_title_and_body(md_text: str, fallback_name: str = None) -> tuple[str, 
 
 def render_entry(md_path: pathlib.Path) -> pathlib.Path:
     text = md_path.read_text(encoding="utf-8")
-    title, body = parse_title_and_body(text)
+    title, body = parse_title_and_body(text, fallback_name=md_path.stem.replace('_',' '))
     body_html = md_to_html_blocks("# " + title + "\n\n" + body)
 
     slug_title = md_path.stem.replace("_", " ")
@@ -119,7 +119,7 @@ def render_entry(md_path: pathlib.Path) -> pathlib.Path:
 def make_entries_index(md_files: list[pathlib.Path]) -> None:
     items = []
     for md_path in sorted(md_files, reverse=True):
-        title, _ = parse_title_and_body(md_path.read_text(encoding="utf-8"))
+        title, _ = parse_title_and_body(md_path.read_text(encoding="utf-8"), fallback_name=md_path.stem.replace('_',' '))
         href = md_path.with_suffix(".html").name
         items.append(f'<li><a href="{html.escape(href)}">{html.escape(title)}</a></li>')
 
