@@ -51,12 +51,40 @@ def md_to_html_blocks(text: str) -> str:
     flush_para()
     return "\n".join(out)
 
-def parse_title_and_body(md_text: str) -> tuple[str, str]:
+def parse_title_and_body(md_text: str, fallback_name: str = None) -> tuple[str, str]:
+    """
+    Extract a title and body from markdown text.
+    Rules:
+    1) If the first line is a top-level '# ' heading, use that as title and the rest as body.
+    2) Otherwise scan for the first heading anywhere (#, ##, ###) and use its text as the title.
+    3) If no heading exists, derive a readable title from the filename (fallback_name) if provided.
+    4) Only return 'Untitled Entry' if no other option is available.
+    """
     lines = md_text.splitlines()
-    if lines and lines[0].startswith("# "):
-        title = lines[0][2:].strip()
+
+    # 1) top-line # heading
+    if lines and lines[0].lstrip().startswith("# "):
+        title = lines[0].lstrip()[2:].strip()
         body = "\n".join(lines[1:]).lstrip("\n")
         return title, body
+
+    # 2) scan for first heading anywhere (#, ##, ###)
+    for line in lines:
+        s = line.lstrip()
+        if s.startswith('#'):
+            # take the hashes off and strip
+            title = s.lstrip('#').strip()
+            body = md_text
+            return title, body
+
+    # 3) derive from filename if provided
+    if fallback_name:
+        # create a human-friendly title from filename stem
+        t = fallback_name.replace('_', ' ').strip()
+        if t:
+            return t, md_text
+
+    # 4) last resort
     return "Untitled Entry", md_text
 
 def render_entry(md_path: pathlib.Path) -> pathlib.Path:
