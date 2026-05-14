@@ -128,7 +128,38 @@ def update_state_after_generation(state: dict, topic: str):
     state['daily_count'] = state.get('daily_count', 0) + 1
     return state
 if __name__ == '__main__':
+    state = load_state()
+    ok, reason = allowed_to_generate(state)
+    if not ok:
+        print(f"blocked: {reason}")
+        raise SystemExit(0)
+
     templates = load_templates()
-    sample = render_sample(templates)
+    # choose a topic/template avoiding recent topics when possible
+    recent = set(state.get('recent_topics', []))
+    # render candidate templates until we find one with a topic not in recent
+    attempts = 0
+    selected = None
+    selected_topic = None
+    while attempts < 10:
+        tpl = random.choice(templates)
+        # simple topic filler choices
+        topic = random.choice(["reading", "tools", "a small habit", "a project"])
+        if topic not in recent:
+            selected = tpl
+            selected_topic = topic
+            break
+        attempts += 1
+
+    if selected is None:
+        # fallback to any
+        selected = random.choice(templates)
+        selected_topic = random.choice(["reading", "tools", "a small habit", "a project"])
+
+    sample = selected.replace("{topic}", selected_topic)
+    sample = render_sample([sample])
     p = write_outbox(sample)
+    # update state
+    state = update_state_after_generation(state, selected_topic)
+    save_state(state)
     print(p)
