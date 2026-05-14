@@ -27,6 +27,17 @@ def load_templates():
         templates.append(body)
     return templates
 
+
+def load_soul_excerpt(max_chars: int = 800) -> str | None:
+    """Return a short excerpt of SOUL.md to use as local tone guidance, or None."""
+    try:
+        if SOUL_PATH.exists() and SOUL_PATH.is_file() and SOUL_PATH.stat().st_size > 0:
+            text = SOUL_PATH.read_text(encoding='utf-8')
+            return text[:max_chars]
+    except Exception:
+        pass
+    return None
+
 def render_sample(templates):
     tpl = random.choice(templates)
     # simple topic filler
@@ -37,6 +48,15 @@ def render_sample(templates):
     if len(lines) < 2:
         lines = [body]
     return "\n\n".join(lines[:6])
+
+def render_preview(templates, soul_excerpt: str | None):
+    """Render a single sample without changing state. If soul_excerpt is provided
+    include a short note (not the content) that SOUL guidance was applied."""
+    sample = render_sample(templates)
+    note = ""
+    if soul_excerpt:
+        note = "(tone guided by SOUL.md)\n\n"
+    return note + sample
 
 def write_outbox(content):
     OUTBOX.mkdir(parents=True, exist_ok=True)
