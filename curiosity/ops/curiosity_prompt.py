@@ -10,6 +10,8 @@ CURIOSITY_DIR = REPO / "curiosity"
 TEMPLATES = CURIOSITY_DIR / "templates" / "prompts.md"
 OUTBOX = CURIOSITY_DIR / "outbox"
 
+SOUL_PATH = pathlib.Path("/home/luma/.openclaw/workspace/SOUL.md")
+
 # Config defaults (state stored locally, untracked)
 CONFIG = {
     "max_per_day": 2,
@@ -19,24 +21,46 @@ CONFIG = {
 def load_templates():
     text = TEMPLATES.read_text(encoding="utf-8")
     # naive split by blank lines into templates
-    parts = [p.strip() for p in text.split('\n\n') if p.strip()]
+    parts = [p for p in text.split('\n\n') if p.strip()]
     templates = []
     for p in parts:
-        lines = p.splitlines()
-        body = lines[0].strip()
+        # skip metadata/comment lines (starting with '#' or empty or lines that look like 'key:')
+        lines = [l for l in (ll.strip() for ll in p.splitlines()) if l and not l.startswith('#') and ':' not in l]
+        if not lines:
+            continue
+        body = lines[0]
         templates.append(body)
     return templates
 
 
 def load_soul_excerpt(max_chars: int = 800) -> str | None:
     """Return a short excerpt of SOUL.md to use as local tone guidance, or None."""
+    reason = None
     try:
-        if SOUL_PATH.exists() and SOUL_PATH.is_file() and SOUL_PATH.stat().st_size > 0:
+        if not SOUL_PATH.exists():
+            reason = f"missing: {SOUL_PATH}"
+            return None
+        if not SOUL_PATH.is_file():
+            reason = f"not a file: {SOUL_PATH}"
+            return None
+        size = SOUL_PATH.stat().st_size
+        if size == 0:
+            reason = "empty file"
+            return None
+        try:
             text = SOUL_PATH.read_text(encoding='utf-8')
             return text[:max_chars]
-    except Exception:
-        pass
-    return None
+        except Exception as e:
+            reason = f"read error: {e!r}"
+            return None
+    finally:
+        if reason:
+            # write a tiny local debug file (untracked) for visibility
+            try:
+                dbg = CURIOSITY_DIR / 'ops' / 'soul_debug.log'
+                dbg.write_text(f"load_soul_excerpt: {reason}\n", encoding='utf-8')
+            except Exception:
+                pass
 
 def render_sample(templates):
     tpl = random.choice(templates)
