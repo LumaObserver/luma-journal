@@ -1,0 +1,6 @@
+# Ignore generated curiosity pulse files and local state/logs
+outbox/
+sent/
+failed/
+state.json
+../../logs/curiosity.log
