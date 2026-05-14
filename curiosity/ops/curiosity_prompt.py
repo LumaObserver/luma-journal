@@ -76,11 +76,9 @@ def render_sample(templates):
 def render_preview(templates, soul_excerpt: str | None):
     """Render a single sample without changing state. If soul_excerpt is provided
     include a short note (not the content) that SOUL guidance was applied."""
-    sample = render_sample(templates)
-    note = ""
-    if soul_excerpt:
-        note = "(tone guided by SOUL.md)\n\n"
-    return note + sample
+    # Return only the sample body. Debugging/preview callers should print SOUL loaded
+    # metadata separately; do not include guidance note in the pulse body.
+    return render_sample(templates)
 
 def write_outbox(content):
     OUTBOX.mkdir(parents=True, exist_ok=True)
