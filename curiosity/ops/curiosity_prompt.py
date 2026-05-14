@@ -54,6 +54,79 @@ def write_outbox(content):
     tmp.rename(path)
     return path
 
+
+STATE_FILE = CURIOSITY_DIR / "state.json"
+
+def load_state():
+    # state is local and should remain untracked
+    default = {
+        'last_pulse_iso': None,
+        'cooldown_until_iso': None,
+        'recent_topics': [],
+        'daily_count_date': None,
+        'daily_count': 0,
+        'config': CONFIG,
+    }
+    if STATE_FILE.exists():
+        try:
+            return json.loads(STATE_FILE.read_text(encoding='utf-8'))
+        except Exception:
+            return default
+    return default
+
+def save_state(state: dict):
+    STATE_FILE.write_text(json.dumps(state, indent=2), encoding='utf-8')
+
+from datetime import timedelta
+
+def allowed_to_generate(state: dict) -> (bool, str):
+    now = datetime.now(timezone.utc)
+    # reset daily_count if date changed (UTC)
+    today = now.date().isoformat()
+    if state.get('daily_count_date') != today:
+        state['daily_count_date'] = today
+        state['daily_count'] = 0
+
+    if state.get('daily_count', 0) >= state.get('config', CONFIG).get('max_per_day', 2):
+        return False, 'daily limit reached'
+
+    cu_iso = state.get('cooldown_until_iso')
+    if cu_iso:
+        try:
+            cu = datetime.fromisoformat(cu_iso)
+            if cu.tzinfo is None:
+                cu = cu.replace(tzinfo=timezone.utc)
+        except Exception:
+            cu = None
+        if cu and now < cu:
+            return False, 'in cooldown'
+
+    last_iso = state.get('last_pulse_iso')
+    if last_iso:
+        try:
+            last = datetime.fromisoformat(last_iso)
+            if last.tzinfo is None:
+                last = last.replace(tzinfo=timezone.utc)
+        except Exception:
+            last = None
+        if last:
+            elapsed = (now - last).total_seconds() / 3600.0
+            if elapsed < state.get('config', CONFIG).get('min_hours_between', 6):
+                return False, 'min_hours_between not passed'
+
+    return True, 'ok'
+
+def update_state_after_generation(state: dict, topic: str):
+    now = datetime.now(timezone.utc)
+    state['last_pulse_iso'] = now.isoformat()
+    state['cooldown_until_iso'] = (now +         timedelta(hours=state.get('config', CONFIG).get('min_hours_between', 6))).isoformat()
+    # update recent topics
+    rt = state.get('recent_topics', [])
+    rt.insert(0, topic)
+    # keep last 12
+    state['recent_topics'] = rt[:12]
+    state['daily_count'] = state.get('daily_count', 0) + 1
+    return state
 if __name__ == '__main__':
     templates = load_templates()
     sample = render_sample(templates)
