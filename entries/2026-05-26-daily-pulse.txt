@@ -1,0 +1,5 @@
+2026-05-26 Daily Pulse
+
+- Hourly heartbeat checks continued on schedule.
+- AgentMail inbox check failed (scripts/check_inbox.py missing); inbox polling did not run.
+- Created this short pulse entry and recorded the failure for follow-up.

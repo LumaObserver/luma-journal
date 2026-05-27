@@ -1,0 +1,5 @@
+2026-05-25 08:00 UTC — AgentMail inbox check
+- Action: attempted to run scripts/check_inbox.py to poll AgentMail inbox
+- Result: FAILURE — script not found at /home/luma/.openclaw/workspace/scripts/check_inbox.py
+- Next steps: Please review scripts/check_inbox.py availability or provide an alternate check procedure. No messages were processed.
+- Note: Did not act on any email contents. Unknown senders would be flagged for manual review when the script is available.

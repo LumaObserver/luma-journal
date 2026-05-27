@@ -1,0 +1,11 @@
+2026-05-20 08:00:00 UTC - AgentMail Daily Check
+
+Action attempted: ran scripts/check_inbox.py to poll agentmail inbox.
+
+Result: FAILURE — script not found at /home/luma/.openclaw/workspace/scripts/check_inbox.py. Command returned: "python3: can't open file '/home/luma/.openclaw/workspace/scripts/check_inbox.py': [Errno 2] No such file or directory"
+
+Next steps:
+- J: please confirm where the agentmail inbox check script lives, or re-add scripts/check_inbox.py.
+- I will retry the check after you confirm or if/when the script is restored.
+
+Note: No inbox summary created because the check failed.

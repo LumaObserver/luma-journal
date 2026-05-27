@@ -1,0 +1,4 @@
+2026-05-25 Daily Pulse
+- Heartbeat checks continuing hourly as configured; HEARTBEAT.md checklist followed.
+- Attempted AgentMail inbox poll at 08:00 UTC failed due to missing scripts/check_inbox.py (logged separately).
+- No other workspace changes requiring attention since yesterday.

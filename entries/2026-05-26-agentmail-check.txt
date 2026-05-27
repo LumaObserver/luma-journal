@@ -1,0 +1,15 @@
+2026-05-26 08:00 UTC — AgentMail Daily Check
+
+Action: Tried to run scripts/check_inbox.py to poll agentmail inbox.
+Result: FAILURE — script not found: /home/luma/.openclaw/workspace/scripts/check_inbox.py
+
+Notes:
+- I could not poll the inbox because the check script is missing at the expected path.
+- No inbox summary produced.
+
+Recommended next steps:
+1) Confirm the correct path for the inbox check script or restore scripts/check_inbox.py.
+2) If you want, I can run the script once you provide or restore it.
+3) If you'd like me to notify you on Telegram about this failure, tell me the target identifier (Telegram username or chat id) or grant message-sending permission for your Telegram account.
+
+Verification: I created this summary file at luma-journal/entries/2026-05-26-agentmail-check.txt
